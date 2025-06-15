@@ -1,16 +1,41 @@
-# water_tracker_app_new
+# Water Tracker App
 
-A new Flutter project.
+Приложение для учёта выпитой за день воды.  
+Позволяет быстро добавлять стандартный объём, вводить произвольный (в мл), а также синхронизировать историю с Firebase.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📱 Скриншоты
 
-A few resources to get you started if this is your first Flutter project:
+| Home (Главный экран)       | History (История потребления)  | Profile (Профиль & Auth)    |
+|---------------------------|-------------------------------|-----------------------------|
+| ![Home](screenshots/home.png) | ![History](screenshots/history.png) | ![Profile](screenshots/profile.png) |
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+*(Добавьте в папку `screenshots/` соответствующие скриншоты)*
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🔧 Функционал
+
+- **3 экрана** с навигацией:
+  - **Home** — счётчик, кнопки +250 мл, ввод произвольного (в мл), сброс.
+  - **History** — список дней с объёмом воды (локально и из Firebase).
+  - **Profile** — вход/выход через Google, синхронизация локальной истории в облако.
+
+- **Сохранение истории**:
+  - `shared_preferences` для локального хранения.
+  - **Firebase Firestore** для бэкапа/доступа с другого устройства.
+
+- **Аутентификация**:
+  - **Firebase Auth** + Google Sign-In.
+
+- **Тесты**:
+  - Widget-тест `test/widget_test.dart`, проверяет навигацию и заголовки AppBar.
+
+---
+
+## 🚀 Запуск
+
+1. Установите Flutter и подтяните зависимости:
+   ```bash
+   flutter pub get
