@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/water_button.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
@@ -17,21 +18,45 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _customController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _loadTodayTotal();
+  }
+
+  @override
   void dispose() {
     _customController.dispose();
     super.dispose();
+  }
+
+  // Загружает сохранённый за сегодня объём
+  Future<void> _loadTodayTotal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T').first;
+    setState(() {
+      _totalMl = prefs.getInt('water_$today') ?? 0;
+    });
+  }
+
+  // Сохраняет текущий объём под ключом сегодняшней даты
+  Future<void> _saveTotal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T').first;
+    await prefs.setInt('water_$today', _totalMl);
   }
 
   void _addWater() {
     setState(() {
       _totalMl += _step;
     });
+    _saveTotal();
   }
 
   void _resetWater() {
     setState(() {
       _totalMl = 0;
     });
+    _saveTotal();
   }
 
   void _addCustom() {
@@ -41,8 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _totalMl += value;
       });
       _customController.clear();
+      _saveTotal();
     } else {
-      // Показать ошибку, если ввод некорректен
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Введите число мл больше нуля')),
       );
@@ -62,8 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text('Выпито: $liters л', style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 32),
-
-            // Кнопки +250 и Сброс
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -71,10 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 WaterButton(label: 'Сброс', onPressed: _resetWater),
               ],
             ),
-
             const SizedBox(height: 24),
-
-            // Поле для ввода своего объёма и кнопка «Добавить»
             Row(
               children: [
                 Expanded(
