@@ -13,7 +13,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _totalMl = 0;
-  final int _step = 250; // объём за одно нажатие
+  final int _step = 250;
+  final TextEditingController _customController = TextEditingController();
+
+  @override
+  void dispose() {
+    _customController.dispose();
+    super.dispose();
+  }
 
   void _addWater() {
     setState(() {
@@ -27,9 +34,23 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _addCustom() {
+    final value = int.tryParse(_customController.text);
+    if (value != null && value > 0) {
+      setState(() {
+        _totalMl += value;
+      });
+      _customController.clear();
+    } else {
+      // Показать ошибку, если ввод некорректен
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите число мл больше нуля')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Отображаем литры с двумя знаками после точки
     final liters = (_totalMl / 1000).toStringAsFixed(2);
 
     return Scaffold(
@@ -37,15 +58,40 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text('Выпито: $liters л', style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 32),
+
+            // Кнопки +250 и Сброс
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                WaterButton(label: '+250 мл', onPressed: _addWater),
+                WaterButton(label: '+$_step мл', onPressed: _addWater),
                 WaterButton(label: 'Сброс', onPressed: _resetWater),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Поле для ввода своего объёма и кнопка «Добавить»
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _customController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Введите мл (например, 150)',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _addCustom,
+                  child: const Text('Добавить'),
+                ),
               ],
             ),
           ],
