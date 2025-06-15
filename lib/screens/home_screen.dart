@@ -29,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Загружает сохранённый за сегодня объём
   Future<void> _loadTodayTotal() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T').first;
@@ -38,35 +37,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Сохраняет текущий объём под ключом сегодняшней даты
   Future<void> _saveTotal() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T').first;
     await prefs.setInt('water_$today', _totalMl);
   }
 
-  void _addWater() {
-    setState(() {
-      _totalMl += _step;
-    });
-    _saveTotal();
+  Future<void> _addWater() async {
+    setState(() => _totalMl += _step);
+    await _saveTotal();
   }
 
-  void _resetWater() {
-    setState(() {
-      _totalMl = 0;
-    });
-    _saveTotal();
+  Future<void> _resetWater() async {
+    setState(() => _totalMl = 0);
+    await _saveTotal();
   }
 
-  void _addCustom() {
+  Future<void> _addCustom() async {
     final value = int.tryParse(_customController.text);
     if (value != null && value > 0) {
-      setState(() {
-        _totalMl += value;
-      });
+      setState(() => _totalMl += value);
       _customController.clear();
-      _saveTotal();
+      await _saveTotal();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Введите число мл больше нуля')),
@@ -83,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Выпито: $liters л', style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 32),
@@ -108,10 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _addCustom,
-                  child: const Text('Добавить'),
-                ),
+                ElevatedButton(onPressed: _addCustom, child: const Text('Добавить')),
               ],
             ),
           ],
@@ -120,8 +109,16 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.pushNamed(context, HistoryScreen.routeName);
-          if (i == 2) Navigator.pushNamed(context, ProfileScreen.routeName);
+          switch (i) {
+            case 0:
+              break; // остаёмся
+            case 1:
+              Navigator.pushReplacementNamed(context, HistoryScreen.routeName);
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, ProfileScreen.routeName);
+              break;
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.local_drink), label: 'Home'),
