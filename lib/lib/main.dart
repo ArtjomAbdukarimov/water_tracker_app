@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';           // ← импорт для инициализации Firebase
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/profile_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();                // ← обязательно вызвать до инициализации
-  await Firebase.initializeApp(); // ← инициализируем Firebase
-
-  // Диагностический вывод — ставим здесь, сразу после инициализации
-  print('✅ Firebase initialized: ${Firebase.apps.map((a) => a.name).toList()}');
-
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const WaterTrackerApp());
 }
 

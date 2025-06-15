@@ -21,13 +21,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _user = _auth.currentUser;
+    // В тестах Firebase ещё не инициализирован, поэтому оборачиваем в try/catch
+    try {
+      _user = _auth.currentUser;
+    } catch (_) {
+      _user = null;
+    }
   }
 
   Future<void> _signInWithGoogle() async {
     try {
       final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return;
+      if (googleUser == null) return; // Пользователь отменил вход
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
@@ -36,10 +41,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userCred = await _auth.signInWithCredential(credential);
       setState(() => _user = userCred.user);
       await _syncHistoryToCloud();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка входа: $e')),
-      );
+    } catch (e, st) {
+      // Выводим ошибку и стек в консоль для Logcat
+      debugPrint('Sign-in error: $e');
+      debugPrintStack(stackTrace: st);
+      // Показываем реальную ошибку пользователю
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка входа: $e')),
+        );
+      }
     }
   }
 
@@ -51,7 +62,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _syncHistoryToCloud() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = _user!.uid;
+    final userId = _user?.uid;
+    if (userId == null) return;
     final firestore = FirebaseFirestore.instance;
     final batch = firestore.batch();
 
